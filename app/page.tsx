@@ -1,225 +1,161 @@
+import Image from "next/image";
+
+export default function Home() {
+  return (
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <Image
+          className="dark:invert"
+          src="/next.svg"
+          alt="Next.js logo"
+          width={180}
+          height={38}
+          priority
+        />
+        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+          <li className="mb-2 tracking-[-.01em]">
+            Get started by editing{" "}
+            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
+              app/page.tsx
+            </code>
+            .
+          </li>
+          <li className="tracking-[-.01em]">
+            Save and see your changes instantly.
+          </li>
+        </ol>
+
+        <div className="flex gap-4 items-center flex-col sm:flex-row">
+          <a
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className="dark:invert"
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={20}
+              height={20}
+            />
+            Deploy now
+          </a>
+          <a
+            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read our docs
+          </a>
+        </div>
+      </main>
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/file.svg"
+            alt="File icon"
+            width={16}
+            height={16}
+          />
+          Learn
+        </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/window.svg"
+            alt="Window icon"
+            width={16}
+            height={16}
+          />
+          Examples
+        </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/globe.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Go to nextjs.org →
+        </a>
+      </footer>
+    </div>
+  );
+}
 'use client';
 
 import { useState } from 'react';
-import FileUpload from './components/FileUpload';
-import ResumePreview from './components/ResumePreview';
-import DownloadButtons from './components/DownloadButtons';
-
-const targetRoles = [
-  'Full-Stack Developer',
-  'Backend Developer',
-  'Frontend Developer',
-  'DevOps Engineer',
-  'Data Engineer',
-  'Mobile Developer',
-  'Software Engineer',
-  'Senior Developer'
-];
+import { useDropzone } from 'react-dropzone';
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [targetRole, setTargetRole] = useState('');
-  const [customRole, setCustomRole] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [clientContext, setClientContext] = useState('');
-  const [enhancedHtml, setEnhancedHtml] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [candidateName, setCandidateName] = useState('');
+  const [result, setResult] = useState<string>('');
 
-  const handleFileSelect = (file: File) => {
-    setSelectedFile(file);
-    setError('');
-    setEnhancedHtml(null);
-  };
-
-  const handleRoleSelect = (role: string) => {
-    setTargetRole(role);
-    setCustomRole('');
-  };
-
-  const handleCustomRoleChange = (value: string) => {
-    setCustomRole(value);
-    if (value.trim()) {
-      setTargetRole(value.trim());
-    }
-  };
-
-  const handleEnhance = async () => {
-    if (!selectedFile || !targetRole) {
-      setError('Please upload a file and select a target role');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      // Parse file
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      const parseResponse = await fetch('/api/parse-file', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!parseResponse.ok) {
-        throw new Error('Failed to parse file');
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      'text/plain': ['.txt']
+    },
+    onDrop: (files) => {
+      if (files[0]) {
+        setSelectedFile(files[0]);
+        // Read and display file content
+        files[0].text().then(content => {
+          setResult(`File: ${files[0].name}\n\nContent:\n${content}`);
+        });
       }
-
-      const parseResult = await parseResponse.json();
-
-      // Enhance resume
-      const enhanceResponse = await fetch('/api/enhance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: parseResult.data.text,
-          targetRole,
-          instructions,
-          clientContext,
-        }),
-      });
-
-      if (!enhanceResponse.ok) {
-        throw new Error('Failed to enhance resume');
-      }
-
-      const enhanceResult = await enhanceResponse.json();
-      setEnhancedHtml(enhanceResult.data.html);
-      setCandidateName(enhanceResult.data.enhanced.personalInfo.name);
-
-    } catch (err) {
-      console.error('Enhancement error:', err);
-      setError('Failed to enhance resume. Please try again.');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            🚀 Resume Enhancer
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Upload a resume, specify the target role, and get a professional, 
-            ATS-friendly version optimized for your clients
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Input Panel */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">📄 Input</h2>
-            
-            <FileUpload
-              onFileSelect={handleFileSelect}
-              selectedFile={selectedFile}
-              loading={loading}
-            />
-
-            {/* Target Role Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Target Role
-              </label>
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                {targetRoles.map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => handleRoleSelect(role)}
-                    className={`p-2 text-sm border rounded-md transition-colors ${
-                      targetRole === role
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
-              <input
-                type="text"
-                placeholder="Or specify custom role..."
-                value={customRole}
-                onChange={(e) => handleCustomRoleChange(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Additional Instructions */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Instructions (Optional)
-              </label>
-              <textarea
-                placeholder="e.g., Emphasize cloud experience, highlight leadership skills, focus on specific technologies..."
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                rows={3}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Client Context */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company/Client Context (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., Fintech startup, Enterprise healthcare, E-commerce..."
-                value={clientContext}
-                onChange={(e) => setClientContext(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Process Button */}
-            <button
-              onClick={handleEnhance}
-              disabled={!selectedFile || !targetRole || loading}
-              className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-                !selectedFile || !targetRole || loading
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {loading ? '🔄 Enhancing Resume...' : '✨ Enhance Resume'}
-            </button>
-
-            {/* Error Message */}
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-700 text-sm">{error}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Output Panel */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">✨ Enhanced Resume</h2>
-            
-            <ResumePreview htmlContent={enhancedHtml} loading={loading} />
-            
-            <DownloadButtons
-              htmlContent={enhancedHtml}
-              candidateName={candidateName}
-              targetRole={targetRole}
-            />
+    <div className="container mx-auto p-8">
+      <h1 className="text-4xl font-bold text-center mb-8">
+        Resume Enhancer MVP
+      </h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Upload Section */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-2xl font-bold mb-4">Upload Resume</h2>
+          
+          <div
+            {...getRootProps()}
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400"
+          >
+            <input {...getInputProps()} />
+            <p className="text-gray-600">
+              {selectedFile ? 
+                `Selected: ${selectedFile.name}` : 
+                'Drop a text file here, or click to select'
+              }
+            </p>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Built for professional staffing teams • Powered by AI</p>
+        {/* Result Section */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-2xl font-bold mb-4">Result</h2>
+          <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto h-64">
+            {result || 'Upload a file to see results...'}
+          </pre>
         </div>
       </div>
     </div>
