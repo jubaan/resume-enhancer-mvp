@@ -1,8 +1,10 @@
-import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+// Import mammoth dynamically to avoid type issues
+const mammoth = require('mammoth');
 
 export interface ParsedContent {
   text: string;
@@ -37,7 +39,7 @@ export async function parseFile(file: File): Promise<ParsedContent> {
     }
 
     return { text, metadata };
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`Failed to parse file: ${error.message}`);
   }
 }
