@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['mammoth', 'pdfjs-dist']
-  },
+  serverExternalPackages: ['mammoth', 'pdfjs-dist'],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
